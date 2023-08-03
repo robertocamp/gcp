@@ -1,0 +1,49 @@
+---
+- name: Gather facts about VMs
+  hosts: all
+  tasks:
+    - name: Gather distribution and version facts
+      setup:
+        filter:
+          - ansible_distribution
+          - ansible_distribution_version
+
+    - name: Display distribution
+      debug:
+        var: ansible_distribution
+
+    - name: Display distribution version
+      debug:
+        var: ansible_distribution_version
+
+    - name: Gather service facts
+      become: yes
+      service_facts:
+
+    - name: Check if google-osconfig-agent service exists
+      set_fact:
+        google_osconfig_agent_exists: "'google-osconfig-agent' in ansible_facts.services"
+
+    - name: Display whether google-osconfig-agent service exists
+      debug:
+        var: google_osconfig_agent_exists
+
+    - name: Update apt cache and install google-osconfig-agent
+      when: not google_osconfig_agent_exists
+      become: yes
+      apt:
+        name: google-osconfig-agent
+        update_cache: yes
+        state: present
+
+    - name: Get google-osconfig-agent status
+      when: google_osconfig_agent_exists
+      become: yes
+      shell: systemctl status google-osconfig-agent
+      register: systemctl_output
+
+    - name: Display google-osconfig-agent status
+      when: google_osconfig_agent_exists
+      debug:
+        var: systemctl_output.stdout_lines
+...
