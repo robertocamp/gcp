@@ -1,8 +1,11 @@
 # gcp
 ## playbooks
 ### demo1
-A new apt task is added to update the apt cache and install google-osconfig-agent. This task is only executed if google_osconfig_agent_exists is false.
-
-The apt module is used to manage packages. The name parameter is set to the package to install (google-osconfig-agent), update_cache is set to yes to update the apt cache before installing the package, and state is set to present to ensure the package is installed.
-
-This version of the playbook will install google-osconfig-agent on any host where it is not already installed, and then get and display the status of the service. Note that the systemctl status google-osconfig-agent task may still fail if the service is not running, even though it is installed. If this is a concern, you could add another task to ensure the service is running using the service module.
+1. The setup module gathers the OS distribution and version.
+2. The OS distribution and version are printed to the console.
+3. The service_facts module gathers facts about all services.
+4. The playbook checks if the google-osconfig-agent service is among the services and sets the fact google_osconfig_agent_exists.
+5. The fact google_osconfig_agent_exists is printed to the console.
+6. If google_osconfig_agent_exists is false, the playbook updates the apt cache and installs google-osconfig-agent.
+7. The playbook attempts to get the status of the google-osconfig-agent service and registers the output to the systemctl_output fact. If the service doesn't exist or is not running, the task will fail, but the ignore_errors: yes directive ensures that the playbook will continue.
+8. If systemctl_output.stdout is defined, which means the previous command did not fail, the playbook prints the status of the google-osconfig-agent service to the console.
