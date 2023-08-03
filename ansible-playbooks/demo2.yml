@@ -1,0 +1,45 @@
+---
+- name: Gather facts about VMs and ensure google-osconfig-agent is installed
+  hosts: "{{ targets }}"
+  become: true
+  tasks:
+    - name: Gather distribution and version facts
+      setup:
+        filter:
+          - ansible_distribution
+          - ansible_distribution_version
+
+    - name: Display distribution
+      debug:
+        var: ansible_distribution
+
+    - name: Display distribution version
+      debug:
+        var: ansible_distribution_version
+
+    - name: Check if google-osconfig-agent package is installed
+      shell: dpkg -s google-osconfig-agent
+      register: dpkg_check
+      ignore_errors: yes
+
+    - name: Display whether google-osconfig-agent package is installed
+      debug:
+        var: dpkg_check.stdout_lines
+
+    - name: Update apt cache and install google-osconfig-agent
+      when: dpkg_check.rc != 0
+      apt:
+        name: google-osconfig-agent
+        update_cache: yes
+        state: present
+
+    - name: Get google-osconfig-agent status
+      when: dpkg_check.rc == 0
+      shell: systemctl status google-osconfig-agent
+      register: systemctl_output
+
+    - name: Display google-osconfig-agent status
+      when: dpkg_check.rc == 0
+      debug:
+        var: systemctl_output.stdout_lines
+...
