@@ -1,7 +1,6 @@
 ---
 - name: Gather facts about VMs and ensure google-osconfig-agent is installed
   hosts: "{{ targets }}"
-  become: true
   tasks:
     - name: Gather distribution and version facts
       setup:
@@ -20,26 +19,26 @@
     - name: Check if google-osconfig-agent service exists
       shell: systemctl status google-osconfig-agent
       register: systemctl_check
-      failed_when: "'Loaded: not-found' in systemctl_check.stdout or 'could not be found' in systemctl_check.stderr"
+      ignore_errors: yes
 
     - name: Display whether google-osconfig-agent service exists
       debug:
         var: systemctl_check.stdout_lines
 
     - name: Update apt cache and install google-osconfig-agent
-      when: "'Loaded: not-found' in systemctl_check.stdout or 'could not be found' in systemctl_check.stderr"
+      when: systemctl_check.rc != 0
       apt:
         name: google-osconfig-agent
         update_cache: yes
         state: present
 
     - name: Get google-osconfig-agent status
-      when: "'Loaded: loaded' in systemctl_check.stdout"
+      when: systemctl_check.rc == 0
       shell: systemctl status google-osconfig-agent
       register: systemctl_output
 
     - name: Display google-osconfig-agent status
-      when: "'Loaded: loaded' in systemctl_check.stdout"
+      when: systemctl_check.rc == 0
       debug:
         var: systemctl_output.stdout_lines
 ...
