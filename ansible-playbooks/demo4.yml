@@ -1,0 +1,42 @@
+---
+- name: Upgrade Preparation Playbook
+  hosts: your_target_group
+  become: yes  # This is necessary if you need root permissions
+
+  tasks:
+
+    # TASK 1
+
+    - name: Create a backup archive of /etc/apt/ on the remote hosts
+      archive:
+        path: /etc/apt/
+        dest: /home/ansible/apt_backup.tar.gz
+        format: gz
+
+    - name: Ensure /etc/apt/sources.list.d/ directory is empty
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_fileglob:
+        - "/etc/apt/sources.list.d/*"
+      when: item != "/etc/apt/sources.list.d/"
+
+    # TASK 2
+
+    - name: Copy sources.list from the control server to the remote hosts
+      copy:
+        src: /ansible/files/sources.list
+        dest: /etc/apt/sources.list
+        owner: root
+        group: root
+        mode: '0644'
+
+    # TASK 3
+
+    - name: Copy google_osconfig_managed.list from the control server to the remote hosts
+      copy:
+        src: /ansible/files/google_osconfig_managed.list
+        dest: /etc/apt/sources.list.d/google_osconfig_managed.list
+        owner: root
+        group: root
+        mode: '0644'
