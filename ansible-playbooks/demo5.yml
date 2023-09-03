@@ -1,0 +1,34 @@
+---
+- name: Install gcsfuse on Debian VM
+  hosts: all
+  become: yes
+  tasks:
+    - name: Determine Debian OS version
+      command: lsb_release -c -s
+      register: debian_version
+      changed_when: false
+
+    - name: Set GCSFUSE_REPO variable
+      set_fact:
+        gcsfuse_repo: "gcsfuse-{{ debian_version.stdout }}"
+
+    - name: Add gcsfuse repo to sources.list
+      lineinfile:
+        path: /etc/apt/sources.list.d/gcsfuse.list
+        line: "deb https://packages.cloud.google.com/apt {{ gcsfuse_repo }} main"
+        create: yes
+        state: present
+
+    - name: Add Google Cloud APT key
+      apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        state: present
+
+    - name: Update APT cache
+      apt:
+        update_cache: yes
+
+    - name: Install gcsfuse
+      apt:
+        name: gcsfuse
+        state: present
