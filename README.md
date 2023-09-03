@@ -19,3 +19,9 @@
 - Also note the use of become: yes at the playbook level to ensure the tasks are run with superuser privileges, as modifying files in /etc/apt/sources.list.d/ and updating the apt cache typically require such privileges.
 
 ### demo4
+### demo5
+- Determines the version of the Debian OS to use the correct repository.
+- Adds the gcsfuse repo.
+- Installs the GPG key.
+- Updates the package list.
+- Installs the gcsfuse package.

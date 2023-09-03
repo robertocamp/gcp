@@ -32,3 +32,13 @@
       apt:
         name: gcsfuse
         state: present
+
+    - name: Check if gcsfuse binary exists
+      stat:
+        path: /usr/bin/gcsfuse
+      register: gcsfuse_binary
+
+    - name: Fail if gcsfuse binary is not found
+      fail:
+        msg: "gcsfuse binary was not found!"
+      when: not gcsfuse_binary.stat.exists
