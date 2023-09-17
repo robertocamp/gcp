@@ -69,3 +69,9 @@
 - Installs the GPG key.
 - Updates the package list.
 - Installs the gcsfuse package.
+
+### demo6
+- Backup existing SSL files: This will copy the existing certificates and keys on the Apache server to a backup location with a timestamp in the filename.
+- Copy new SSL certificate and chain: This will copy the certificates and the key from your Ansible control server to the Apache server.
+- Check SSL certificate validity: This uses the openssl command to check the validity of the new SSL certificate on the Apache server. The playbook will fail at this step if the check is unsuccessful.
+- Reload Apache service: This will reload the Apache service if the certificate check is successful.

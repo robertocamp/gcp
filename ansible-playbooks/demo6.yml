@@ -1,0 +1,34 @@
+---
+- name: Update SSL Certificates for Apache Server
+  hosts: [your_target_host_or_group]
+  become: yes
+  tasks:
+    - name: Backup existing SSL files
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.src }}.backup_{{ ansible_date_time.date }}"
+        remote_src: yes
+      with_items:
+        - { src: '/etc/apache2/ssl/star_acme_com.crt' }
+        - { src: '/etc/apache2/ssl/DigiCertCA.crt' }
+        - { src: '/etc/apache2/ssl/acme.key' }
+
+    - name: Copy new SSL certificate and chain
+      copy:
+        src: "/mnt/gcs_jenkins/ssl/certs/apache/{{ item.src }}"
+        dest: "{{ item.dest }}"
+      with_items:
+        - { src: 'star_acme_com.crt', dest: '/etc/apache2/ssl/star_acme_com.crt' }
+        - { src: 'DigiCertCA.crt', dest: '/etc/apache2/ssl/DigiCertCA.crt' }
+        - { src: 'acme2024.key', dest: '/etc/apache2/ssl/acme.key' }
+
+    - name: Check SSL certificate validity
+      command: openssl x509 -noout -dates -in /etc/apache2/ssl/star_acme_com.crt
+      register: ssl_check
+      failed_when: "'notAfter' not in ssl_check.stdout"
+
+    - name: Reload Apache service
+      service:
+        name: apache2
+        state: reloaded
+      when: ssl_check is succeeded
