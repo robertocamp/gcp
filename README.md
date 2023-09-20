@@ -75,3 +75,9 @@
 - Copy new SSL certificate and chain: This will copy the certificates and the key from your Ansible control server to the Apache server.
 - Check SSL certificate validity: This uses the openssl command to check the validity of the new SSL certificate on the Apache server. The playbook will fail at this step if the check is unsuccessful.
 - Reload Apache service: This will reload the Apache service if the certificate check is successful.
+
+## demo7
+- The copy module is used to copy the bash-test.sh script from your control server to the remote servers.
+- the script is make executable using the `0755` permissions mapping
+- The bash_update_result registered variable keeps track of whether the update of /bin/sh to point to /bin/bash was successful.
+- The command module runs the bash-test.sh script only if the bash_update_result indicates success.
