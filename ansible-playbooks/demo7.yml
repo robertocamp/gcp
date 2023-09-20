@@ -2,12 +2,23 @@
 - name: Bash symlink update and test
   hosts: your_target_host_group_or_hosts
   tasks:
+    
+    - name: Check if /bin/sh is already symlinked to /bin/bash
+      command: readlink /bin/sh
+      register: current_symlink
+      changed_when: false  # This ensures the task always reports "ok" status
+    
+    - name: Set fact if /bin/sh is already symlinked to /bin/bash
+      set_fact:
+        symlink_correct: "{{ current_symlink.stdout == '/bin/bash' }}"
+    
     - name: Copy bash-test.sh to remote server
       copy:
         src: /ansible/shell/bash-test.sh
         dest: ~/ansible/bash-test.sh
         mode: '0755'
-
+      when: not symlink_correct
+    
     - name: Ensure /bin/sh points to /bin/bash
       become: yes
       shell: |
@@ -16,7 +27,9 @@
       args:
         warn: no
       register: bash_update_result
-      when: ansible_os_family == 'Debian'
+      when: 
+        - ansible_os_family == 'Debian'
+        - not symlink_correct
       
     - name: Run bash-test.sh to verify
       become: yes
