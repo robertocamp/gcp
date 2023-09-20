@@ -77,6 +77,11 @@
 - Reload Apache service: This will reload the Apache service if the certificate check is successful.
 
 ## demo7
+- "Check if /bin/sh is already symlinked to /bin/bash" which uses the readlink command to determine the target of the /bin/sh symlink. 
+- The result is stored in the current_symlink variable.
+- The set_fact module is then used to set a fact named symlink_correct if /bin/sh is already pointing to /bin/bash.
+- The `when: not symlink_correct` condition has been added to the tasks that need to be skipped if the symlink is already correct. 
+- This ensures these tasks are only executed if /bin/sh isn't already symlinked to /bin/bash.
 - The copy module is used to copy the bash-test.sh script from your control server to the remote servers.
 - the script is make executable using the `0755` permissions mapping
 - The bash_update_result registered variable keeps track of whether the update of /bin/sh to point to /bin/bash was successful.
