@@ -1,0 +1,26 @@
+---
+- name: Bash symlink update and test
+  hosts: your_target_host_group_or_hosts
+  tasks:
+    - name: Copy bash-test.sh to remote server
+      copy:
+        src: /ansible/shell/bash-test.sh
+        dest: ~/ansible/bash-test.sh
+        mode: '0755'
+
+    - name: Ensure /bin/sh points to /bin/bash
+      become: yes
+      shell: |
+        echo "dash dash/sh boolean false" | debconf-set-selections
+        dpkg-reconfigure -f noninteractive dash
+      args:
+        warn: no
+      register: bash_update_result
+      when: ansible_os_family == 'Debian'
+      
+    - name: Run bash-test.sh to verify
+      become: yes
+      command: ~/ansible/bash-test.sh
+      when: 
+        - ansible_os_family == 'Debian'
+        - bash_update_result is succeeded
