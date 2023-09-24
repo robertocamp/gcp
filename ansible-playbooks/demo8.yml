@@ -23,7 +23,7 @@
     - name: Remove specific lines from the Apache config file
       lineinfile:
         path: /etc/apache2/sites-enabled/site.conf
-        regexp: 'BalancerMember.*e2[0-6]$'
+        regexp: 'BalancerMember.*-fe1[5-9]$'
         state: absent
         backup: yes  # Create a backup before making changes
       register: line_removal
