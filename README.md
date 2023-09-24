@@ -86,3 +86,13 @@
 - the script is make executable using the `0755` permissions mapping
 - The bash_update_result registered variable keeps track of whether the update of /bin/sh to point to /bin/bash was successful.
 - The command module runs the bash-test.sh script only if the bash_update_result indicates success.
+
+## demo8
+- use regular expression matching to match lines in the Apache configuration and remove them
+- The $ symbol in regular expressions asserts the position at the end of a line. 
+- When used in a regex pattern, it means that the preceding character or group must appear at the end of the line for a match to occur.
+
+- BalancerMember will match lines that contain this exact string.
+- `.*` allows for any characters (including none) between BalancerMember and the -fe1[5-9].
+- `-fe1[5-9]` will match -fe15, -fe16, -fe17, -fe18, or -fe19.
+- `$` asserts that the matched string should be at the end of a line.

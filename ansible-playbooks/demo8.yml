@@ -1,0 +1,51 @@
+---
+- name: Check if Apache config file exists and verify specific lines
+  hosts: "{{ targets }}"
+  become: true
+  gather_facts: yes
+  tasks:
+    - name: Check if /etc/apache2/sites-enabled/site.conf exists
+      stat:
+        path: /etc/apache2/sites-enabled/site.conf
+      register: file_check
+
+    - name: Display the result
+      debug:
+        msg: "/etc/apache2/sites-enabled/site.conf exists on {{ inventory_hostname }}"
+      when: file_check.stat.exists
+
+    - name: Backup Apache configuration file
+      command: cp /etc/apache2/sites-enabled/site.conf /etc/apache2/sites-enabled/site.conf.bak
+      args:
+        creates: /etc/apache2/sites-enabled/site.conf.bak
+      when: file_check.stat.exists
+
+    - name: Remove specific lines from the Apache config file
+      lineinfile:
+        path: /etc/apache2/sites-enabled/site.conf
+        regexp: 'BalancerMember.*e2[0-6]$'
+        state: absent
+        backup: yes  # Create a backup before making changes
+      register: line_removal
+      ignore_errors: yes  # Ignore errors if the lines are not found
+
+    - name: Display the result of line removal
+      debug:
+        msg: "Specific lines removed from /etc/apache2/sites-enabled/site.conf on {{ inventory_hostname }}"
+      when: line_removal.changed
+
+    - name: Check Apache configuration syntax
+      command: apachectl configtest
+      register: config_test
+      ignore_errors: yes  # Ignore errors if the syntax check fails
+
+    - name: Display the result of configuration syntax check
+      debug:
+        msg: "Apache configuration syntax check passed on {{ inventory_hostname }}"
+      when: config_test.rc == 0
+
+    - name: Reload Apache to apply configuration changes
+      command: apachectl graceful  # You can also use 'systemctl reload apache2' on systemd-based systems
+      async: 1
+      poll: 0
+      ignore_errors: yes  # Ignore errors in case Apache isn't currently running or restart fails
