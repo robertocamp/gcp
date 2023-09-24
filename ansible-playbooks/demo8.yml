@@ -20,6 +20,15 @@
         creates: /etc/apache2/sites-enabled/site.conf.bak
       when: file_check.stat.exists
 
+    - name: Print lines matching the regex
+      shell: grep 'BalancerMember.*-fe1[5-9]$' /etc/apache2/sites-enabled/cloud-dr.conf
+      register: grep_output
+      ignore_errors: yes  # It will not fail if no lines match the regex
+
+    - name: Display matched lines
+      debug:
+        var: grep_output.stdout_lines
+
     - name: Remove specific lines from the Apache config file
       lineinfile:
         path: /etc/apache2/sites-enabled/site.conf
